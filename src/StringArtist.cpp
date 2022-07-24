@@ -66,7 +66,7 @@ float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId,
     {
         if (m_draft.getPixelValue(pixel) == 255)
         {
-            score += std::abs(255 - m_imagePtr->getPixelValue(pixel)) * 1.0f;
+            score += std::abs(255 - m_imagePtr->getPixelValue(pixel));
             ++pixelChanged;
         }
     }
