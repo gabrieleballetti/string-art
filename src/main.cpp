@@ -1,4 +1,4 @@
-
+#include <string>
 #include "Image.h"
 #include "StringArtist.h"
 
@@ -17,13 +17,18 @@ int main(int argc, char *argv[])
         std::fprintf(stderr, "Error while parsing image, should be square binary PGM image (without comments).\n");
         return 1;
     }
-    //int blockSize = std::strtol(argv[2], nullptr, 10);
-    int numPins = std::strtol(argv[3], nullptr, 10);
-    std::FILE* outputFile = std::fopen(argv[4], "wb");
-
-    // actual art being done
     Image image = Image(imageFile, imageSize);
-    StringArtist stringArtist = StringArtist(image, numPins);
-    stringArtist.windString();
-    stringArtist.saveImage(outputFile);
+    int numPins = std::strtol(argv[3], nullptr, 10);
+    //std::FILE* outputFile = std::fopen(argv[4], "wb");
+
+    for (size_t i = 0; i < 128; ++i)
+    {
+        std::FILE* outputFile = std::fopen(std::to_string(i).c_str(), "wb");
+
+        // actual art being done
+        StringArtist stringArtist = StringArtist(image, numPins, 128 - i);
+        stringArtist.windString();
+
+        stringArtist.saveImage(outputFile);
+    }
 }

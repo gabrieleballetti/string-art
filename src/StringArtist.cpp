@@ -3,11 +3,20 @@
 #include <iostream>
 #include "BresenhamLineIterator.h"
 
-StringArtist::StringArtist(const Image& image, int numPins) :
+namespace {
+    float CANVAS_LINE_OPACITY = 1.0f;
+    float DRAFT_LINE_OPACITY = 0.2f;
+    float MAX_ALLOWED_SCORE = 0.0f;
+    unsigned int CANVAS_SCALE = 8;
+}
+
+StringArtist::StringArtist(const Image& image, unsigned int numPins, unsigned int skipped_neighbors) :
     m_imagePtr(&image),
-    m_numPins(numPins)
+    m_numPins(numPins),
+    m_skipped_neighbors(skipped_neighbors),
+    m_iteration(0)
 {
-    m_canvas = StringArtImage(m_imagePtr->size() * 2, m_numPins);
+    m_canvas = StringArtImage(m_imagePtr->size() * CANVAS_SCALE, m_numPins);
     m_draft = StringArtImage(m_imagePtr->size(), m_numPins);
 }
 
@@ -16,20 +25,19 @@ void StringArtist::windString()
     // Wind thread around pins until image can't be improved.
     size_t currentPinId = 0;
     std::cout << "start winding" << std::endl;
-    int a = 0;
     while (true)
     {
         size_t nextPinId;
         if (!findNextPin(currentPinId, nextPinId))
             break;
 
-        drawLine(m_draft, currentPinId, nextPinId);
-        drawLine(m_canvas, currentPinId, nextPinId);
+        drawLine(m_draft, currentPinId, nextPinId, DRAFT_LINE_OPACITY);
+        drawLine(m_canvas, currentPinId, nextPinId, CANVAS_LINE_OPACITY);
         currentPinId = nextPinId;
     }
 }
 
-bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId) const
+bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId)
 {
     float bestScore = 0;
 
@@ -37,7 +45,7 @@ bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId) con
     {
         int diff = static_cast<int>(nextPinId) - static_cast<int>(currentPinId);
         int dist = std::min(diff % m_numPins, -diff % m_numPins);
-        if (dist < 10)
+        if (dist < m_skipped_neighbors)
             continue;
 
         unsigned int pixelChanged;
@@ -49,8 +57,8 @@ bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId) con
             bestPinId = nextPinId;
         }
     }
-    std::cout << bestScore << std::endl;
-    return bestScore > 128;
+    std::cout << m_iteration++ << " - " << bestScore << std::endl;
+    return bestScore > MAX_ALLOWED_SCORE;
 }
 
 float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId, unsigned int& pixelChanged) const
@@ -59,25 +67,30 @@ float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId,
     float score = 0.f;
     Point2D currentPin = m_draft.getPin(currentPinId);
     Point2D nextPin = m_draft.getPin(nextPinId);
-    //Point2D diff = nextPin - currentPin;
-    //int distance = std::max(std::abs(diff[0]), std::abs(diff[1]));
+    Point2D diff = nextPin - currentPin;
+    int distance = std::max(std::abs(diff[0]), std::abs(diff[1]));
 
     for (const Point2D& pixel : BresenhamLineIterator(currentPin, nextPin))
     {
-        if (m_draft.getPixelValue(pixel) == 255)
+        //if (m_draft.getPixelValue(pixel) == 255)
         {
-            score += std::abs(255 - m_imagePtr->getPixelValue(pixel));
+            score += std::max(-4, m_draft.getPixelValue(pixel) - m_imagePtr->getPixelValue(pixel));
             ++pixelChanged;
         }
     }
-    return score;
+    return score / distance;
 }
 
-void StringArtist::drawLine(StringArtImage& image, const size_t currentPinId, const size_t nextPinId)
+void StringArtist::drawLine(StringArtImage& image, const size_t currentPinId, const size_t nextPinId, const float opacity)
 {
     for (const Point2D& pixel : BresenhamLineIterator(image.getPin(currentPinId), image.getPin(nextPinId)))
     {
-        image.setPixelValue(pixel, 0);
+        int value = 0;
+        if (opacity < 1.0f)
+        {
+            value = image.getPixelValue(pixel) * (1 - opacity);
+        }
+        image.setPixelValue(pixel, value);
     }
 }
 
