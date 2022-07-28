@@ -5,8 +5,8 @@
 
 namespace {
     float CANVAS_LINE_OPACITY = 1.0f;
-    float DRAFT_LINE_OPACITY = 0.2f;
-    float MAX_ALLOWED_SCORE = 0.0f;
+    float DRAFT_LINE_OPACITY = 0.15f;
+    float MAX_ALLOWED_SCORE = 255.0f;
     unsigned int CANVAS_SCALE = 8;
 }
 
@@ -18,6 +18,7 @@ StringArtist::StringArtist(const Image& image, unsigned int numPins, unsigned in
 {
     m_canvas = StringArtImage(m_imagePtr->size() * CANVAS_SCALE, m_numPins);
     m_draft = StringArtImage(m_imagePtr->size(), m_numPins);
+    m_adjacency.resize(m_imagePtr->size(), std::vector<bool>(m_imagePtr->size(), false));
 }
 
 void StringArtist::windString()
@@ -31,34 +32,38 @@ void StringArtist::windString()
         if (!findNextPin(currentPinId, nextPinId))
             break;
 
+        m_iteration++;
+        std::cout << m_iteration << std::endl;
         drawLine(m_draft, currentPinId, nextPinId, DRAFT_LINE_OPACITY);
         drawLine(m_canvas, currentPinId, nextPinId, CANVAS_LINE_OPACITY);
+        m_adjacency[currentPinId][nextPinId] = true;
+        m_adjacency[nextPinId][currentPinId] = true;
         currentPinId = nextPinId;
     }
+    std::cout << "Done after "<< m_iteration << " iterations" << std::endl;
 }
 
-bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId)
+bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId) const
 {
-    float bestScore = 0;
+    float bestScore = std::numeric_limits<float>::infinity();
 
     for (size_t nextPinId = 0; nextPinId < m_numPins; ++nextPinId)
     {
-        int diff = static_cast<int>(nextPinId) - static_cast<int>(currentPinId);
+        int diff = static_cast<int>(nextPinId) - static_cast<int>(currentPinId); 
         int dist = std::min(diff % m_numPins, -diff % m_numPins);
-        if (dist < m_skipped_neighbors)
+        if (dist < m_skipped_neighbors || m_adjacency[currentPinId][nextPinId])
             continue;
 
         unsigned int pixelChanged;
         float score = lineScore(currentPinId, nextPinId, pixelChanged);
         
-        if (pixelChanged > 0 && score > bestScore)
+        if (pixelChanged > 0 && score < bestScore)
         {
             bestScore = score;
             bestPinId = nextPinId;
         }
     }
-    std::cout << m_iteration++ << " - " << bestScore << std::endl;
-    return bestScore > MAX_ALLOWED_SCORE;
+    return bestScore < MAX_ALLOWED_SCORE;
 }
 
 float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId, unsigned int& pixelChanged) const
@@ -72,11 +77,8 @@ float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId,
 
     for (const Point2D& pixel : BresenhamLineIterator(currentPin, nextPin))
     {
-        //if (m_draft.getPixelValue(pixel) == 255)
-        {
-            score += std::max(-4, m_draft.getPixelValue(pixel) - m_imagePtr->getPixelValue(pixel));
-            ++pixelChanged;
-        }
+        score += m_imagePtr->getPixelValue(pixel) + (255 - m_draft.getPixelValue(pixel));
+        ++pixelChanged;
     }
     return score / distance;
 }

@@ -4,10 +4,10 @@
 
 int main(int argc, char *argv[])
 {
-    // parse output
+    // parse arguments
     if (argc != 5)
     {
-        std::fprintf(stderr, "Usage: string_art input.pgm block_size num_pins output.pgm\n");
+        std::fprintf(stderr, "Usage: string_art input.pgm num_pins skipped_neighbors output.pgm\n");
         return 0;
     }
     std::FILE* imageFile = std::fopen(argv[1], "rb");
@@ -18,17 +18,14 @@ int main(int argc, char *argv[])
         return 1;
     }
     Image image = Image(imageFile, imageSize);
-    int numPins = std::strtol(argv[3], nullptr, 10);
-    //std::FILE* outputFile = std::fopen(argv[4], "wb");
+    int numPins = std::strtol(argv[2], nullptr, 10);
+    int skippedNeighbors = std::strtol(argv[3], nullptr, 10);
+    std::FILE* outputFile = std::fopen(argv[4], "wb");
 
-    for (size_t i = 0; i < 128; ++i)
-    {
-        std::FILE* outputFile = std::fopen(std::to_string(i).c_str(), "wb");
+    // actual art being done
+    StringArtist stringArtist = StringArtist(image, numPins, skippedNeighbors);
+    stringArtist.windString();
 
-        // actual art being done
-        StringArtist stringArtist = StringArtist(image, numPins, 128 - i);
-        stringArtist.windString();
-
-        stringArtist.saveImage(outputFile);
-    }
+    // save final result
+    stringArtist.saveImage(outputFile);
 }
