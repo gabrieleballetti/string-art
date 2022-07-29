@@ -1,12 +1,12 @@
 TARGET     = string-art
 
 CXX        = g++
-CXXFLAGS   = -ggdb3 -O0 -std=c++17 \
+CXXFLAGS   = -std=c++17 \
              -Werror -Wpointer-arith -Wcast-qual \
              -Wno-missing-braces -Wempty-body -Wno-error=uninitialized \
              -Wno-error=deprecated-declarations \
              -pedantic-errors -pedantic \
-             -Os 
+             -O2  #-ggdb3 
 
 LD         = g++ -o
 LDFLAGS    = -Wall -pedantic

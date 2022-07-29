@@ -5,18 +5,18 @@
 
 namespace {
     float CANVAS_LINE_OPACITY = 1.0f;
-    float DRAFT_LINE_OPACITY = 0.15f;
-    float MAX_ALLOWED_SCORE = 255.0f;
-    unsigned int CANVAS_SCALE = 8;
 }
 
-StringArtist::StringArtist(const Image& image, unsigned int numPins, unsigned int skipped_neighbors) :
+StringArtist::StringArtist(const Image& image, unsigned int numPins, float draftOpacity, float threshold, unsigned int skipped_neighbors, unsigned int scaleFactor) :
     m_imagePtr(&image),
     m_numPins(numPins),
-    m_skipped_neighbors(skipped_neighbors),
+    m_draftOpacity(draftOpacity),
+    m_threshold(threshold),
+    m_skippedNeighbors(skipped_neighbors),
+    m_scaleFactor(scaleFactor),
     m_iteration(0)
 {
-    m_canvas = StringArtImage(m_imagePtr->size() * CANVAS_SCALE, m_numPins);
+    m_canvas = StringArtImage(m_imagePtr->size() * m_scaleFactor, m_numPins);
     m_draft = StringArtImage(m_imagePtr->size(), m_numPins);
     m_adjacency.resize(m_imagePtr->size(), std::vector<bool>(m_imagePtr->size(), false));
 }
@@ -33,9 +33,10 @@ void StringArtist::windString()
             break;
 
         m_iteration++;
-        std::cout << m_iteration << std::endl;
-        drawLine(m_draft, currentPinId, nextPinId, DRAFT_LINE_OPACITY);
+        //std::cout << m_iteration << std::endl;
+        drawLine(m_draft, currentPinId, nextPinId, m_draftOpacity);
         drawLine(m_canvas, currentPinId, nextPinId, CANVAS_LINE_OPACITY);
+
         m_adjacency[currentPinId][nextPinId] = true;
         m_adjacency[nextPinId][currentPinId] = true;
         currentPinId = nextPinId;
@@ -51,7 +52,7 @@ bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId) con
     {
         int diff = static_cast<int>(nextPinId) - static_cast<int>(currentPinId); 
         int dist = std::min(diff % m_numPins, -diff % m_numPins);
-        if (dist < m_skipped_neighbors || m_adjacency[currentPinId][nextPinId])
+        if (dist < m_skippedNeighbors || m_adjacency[currentPinId][nextPinId])
             continue;
 
         unsigned int pixelChanged;
@@ -63,7 +64,7 @@ bool StringArtist::findNextPin(const size_t currentPinId, size_t& bestPinId) con
             bestPinId = nextPinId;
         }
     }
-    return bestScore < MAX_ALLOWED_SCORE;
+    return bestScore < m_threshold;
 }
 
 float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId, unsigned int& pixelChanged) const

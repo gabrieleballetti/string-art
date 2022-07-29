@@ -4,10 +4,10 @@
 
 int main(int argc, char *argv[])
 {
-    // parse arguments
-    if (argc != 5)
+    // argument parser (initially from github.com/possibly-wrong/string-art)
+    if (argc != 8)
     {
-        std::fprintf(stderr, "Usage: string_art input.pgm num_pins skipped_neighbors output.pgm\n");
+        std::fprintf(stderr, "Usage: string_art input.pgm num_pins opacity threshold skipped_neighbors scale_factor output.pgm\n");
         return 0;
     }
     std::FILE* imageFile = std::fopen(argv[1], "rb");
@@ -19,11 +19,14 @@ int main(int argc, char *argv[])
     }
     Image image = Image(imageFile, imageSize);
     int numPins = std::strtol(argv[2], nullptr, 10);
-    int skippedNeighbors = std::strtol(argv[3], nullptr, 10);
-    std::FILE* outputFile = std::fopen(argv[4], "wb");
+    float draftOpacity = std::strtof(argv[3], nullptr);
+    float threshold = std::strtof(argv[4], nullptr);
+    int skippedNeighbors = std::strtol(argv[5], nullptr, 10);
+    int scaleFactor = std::strtol(argv[6], nullptr, 10);
+    std::FILE* outputFile = std::fopen(argv[7], "wb");
 
     // actual art being done
-    StringArtist stringArtist = StringArtist(image, numPins, skippedNeighbors);
+    StringArtist stringArtist = StringArtist(image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor);
     stringArtist.windString();
 
     // save final result

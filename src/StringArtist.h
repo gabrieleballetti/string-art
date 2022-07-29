@@ -7,7 +7,7 @@
 class StringArtist
 {
 public:
-    StringArtist(const Image& image, unsigned int numPins, unsigned int skipped_neighbors);
+    StringArtist(const Image& image, unsigned int numPins, float draftOpacity, float threshold, unsigned int skippedNeighbors, unsigned int scaleFactor);
     ~StringArtist(){};
     void windString();
     bool findNextPin(const size_t currentPinId, size_t& bestPinId) const;
@@ -20,6 +20,9 @@ private:
     StringArtImage m_draft;
     std::vector<std::vector<bool>> m_adjacency;
     size_t m_numPins;
-    unsigned int m_skipped_neighbors;
+    float m_draftOpacity;
+    float m_threshold;
+    unsigned int m_skippedNeighbors;
+    unsigned int m_scaleFactor;
     unsigned int m_iteration;
 };
