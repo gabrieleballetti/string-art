@@ -15,7 +15,7 @@ StringArtImage::StringArtImage(size_t imageSize, size_t numPins) :
     for (size_t pinId = 0; pinId < m_numPins; ++pinId)
     {
         double angle = 2 * PI / m_numPins * pinId;
-        m_pins[pinId][0] = static_cast<int>(m_radius * (1 + std::cos(angle)) + 0.5f);
+        m_pins[pinId][0] = static_cast<int>(m_radius * (1 + std::cos(angle)) + 0.5f); 
         m_pins[pinId][1] = static_cast<int>(m_radius * (1 - std::sin(angle)) + 0.5f);
     }
 }
