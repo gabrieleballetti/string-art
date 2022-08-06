@@ -12,8 +12,6 @@ Image::Image(std::FILE* imageFile, size_t imageSize) :
     m_data.resize(m_imageSize * m_imageSize);
     std::fread(&m_data[0], 1, m_imageSize * m_imageSize, imageFile);
     std::fclose(imageFile);
-
-    int a = getPixelValue(Point2D(0,0));
 }
 
 size_t Image::size() const
