@@ -74,10 +74,9 @@ int main(int argc, char *argv[])
     int skippedNeighbors = std::strtol(argv[5], nullptr, 10);
     int scaleFactor = std::strtol(argv[6], nullptr, 10);
     std::FILE* outputFile = std::fopen(argv[7], "wb");
-    StringArtStyle style = magicNumber == 6 ? StringArtStyle::FULL_COLOR : StringArtStyle::BLACK_ON_WHITE; 
 
     // actual art being done
-    StringArtist stringArtist = StringArtist(style, image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor);
+    StringArtist stringArtist = StringArtist(image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor);
     stringArtist.windString();
 
     // save final result

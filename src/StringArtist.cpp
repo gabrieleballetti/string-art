@@ -7,8 +7,7 @@ namespace {
     float CANVAS_LINE_OPACITY = 1.0f;
 }
 
-StringArtist::StringArtist(const StringArtStyle stringArtStyle, const Image& image, unsigned int numPins, float draftOpacity, float threshold, unsigned int skipped_neighbors, unsigned int scaleFactor) :
-    m_stringArtStyle(stringArtStyle),
+StringArtist::StringArtist(const Image& image, unsigned int numPins, float draftOpacity, float threshold, unsigned int skipped_neighbors, unsigned int scaleFactor) :
     m_imagePtr(&image),
     m_numPins(numPins),
     m_draftOpacity(draftOpacity),
