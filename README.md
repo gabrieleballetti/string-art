@@ -1,5 +1,5 @@
 # string-art
-A C++ implementation of an algorithm to generate photorealistic string art images. See my [blog post](https://gabrieleballetti.github.io/2022/07/29/string-art.html) for details and more examples.
+A C++ implementation of an algorithm to generate photorealistic string art images. See my [blog post](https://gabrieleballetti.github.io/posts/2022-07-29-string-art/) for details and more examples.
 
  Algorithm animation |  Final result
 :-------------------------:|:-------------------------:
